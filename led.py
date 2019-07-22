@@ -10,4 +10,7 @@ time.sleep(5)
 gpio.output(23,gpio.PUD_DOWN)
 
 
-gpio.cleanup()  
+gpio.cleanup() 
+
+#kommentar
+ 
