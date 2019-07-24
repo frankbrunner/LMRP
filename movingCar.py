@@ -5,10 +5,9 @@ import threading
 GPIO.setmode(GPIO.BCM)
 
 class movingCar():
-	DIST_PER_SEC = 35.0 #cm/s
-	SEC_PER_TURN = 2.087 #second per full turn
+	DIST_PER_SEC = 35.0
 	
-	def __ini__ (self, left_pin1, left_pin2, right_pin1, right_pin2):
+	def __init__(self, left_pin1, left_pin2, right_pin1, right_pin2):
 		
 		self.MOTOR_LEFT_PIN1 = left_pin1
 		self.MOTOR_LEFT_PIN2 = left_pin2
@@ -20,10 +19,12 @@ class movingCar():
 		GPIO.setup(self.MOTOR_RIGHT_PIN1, GPIO.OUT)
 		GPIO.setup(self.MOTOR_RIGHT_PIN2, GPIO.OUT)
 		
+	    
+		
 	def forward(self):
-		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.LOW)
+		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.HIGH)
 		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.HIGH)
-		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
+		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.HIGH)
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
 		
 	def stop(self):
@@ -31,4 +32,13 @@ class movingCar():
 		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.LOW)
+		
+	def forwardDistance(self, distance):
+		self.forward()
+		x = threading.Timer(distance/self.DIST_PER_SEC, self.stop)
+		x.start()
+
+
+
+		
 		

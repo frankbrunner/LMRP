@@ -5,8 +5,8 @@ GPIO.setmode(GPIO.BCM)
 from Ultrasonic import Ultrasonic
 from movingCar import movingCar	
 
-ultrasonic = Ultrasonic(12,24,1)
+#ultrasonic = Ultrasonic(12,24,1)
 #ultrasonic.startMeasure()
 
 move = movingCar(17,27,23,24)
-move.forward()
+move.forwardDistance(3500.0)
