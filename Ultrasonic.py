@@ -1,55 +1,69 @@
+#Bibliotheken einbinden
 import RPi.GPIO as GPIO
 import time
+ 
+#GPIO Modus (BOARD / BCM)
 GPIO.setmode(GPIO.BCM)
+ 
+#GPIO Pins zuweisen
+#GPIO_TRIGGER = 20
+#GPIO_ECHO = 21
+
+GPIO.setwarnings(False)
+ 
+#Richtung der GPIO-Pins festlegen (IN / OUT)
+
+ 
+class ultrasonic:
+    def __init__(self,GPIO_TRIGGER,GPIO_ECHO):
+        
+        self.gpioTrigger = GPIO_TRIGGER
+        self.gpioEcho = GPIO_ECHO
+        
+        GPIO.setup(self.gpioTrigger, GPIO.OUT)
+        GPIO.setup(self.gpioEcho, GPIO.IN)
+        
+        
+        
+    def distanz(self):
+        
+        # setze Trigger auf HIGH
+        GPIO.output(self.gpioTrigger, True)
+ 
+        # setze Trigger nach 0.01ms aus LOW
+        time.sleep(0.00001)
+        GPIO.output(self.gpioTrigger, False)
+     
+        StartZeit = time.time()
+        StopZeit = time.time()
+     
+        # speichere Startzeit
+        while GPIO.input(self.gpioEcho) == 0:
+            StartZeit = time.time()
+     
+        # speichere Ankunftszeit
+        while GPIO.input(self.gpioEcho) == 1:
+            StopZeit = time.time()
+     
+        # Zeit Differenz zwischen Start und Ankunft
+        TimeElapsed = StopZeit - StartZeit
+        # mit der Schallgeschwindigkeit (34300 cm/s) multiplizieren
+        # und durch 2 teilen, da hin und zurueck
+        distanz = (TimeElapsed * 34300) / 2
+     
+        return distanz
 
 
+ 
+#if __name__ == '__main__':
+#    try:
+#        while True:
+#            abstand = distanz()
+#            print ("Gemessene Entfernung = %.1f cm" % abstand)
+#            time.sleep(1)
+# 
+#        # Beim Abbruch durch STRG+C resetten
+#    except KeyboardInterrupt:
+#        print("Messung vom User gestoppt")
+#        GPIO.cleanup()
 
-#Set GPIO in out
-
-
-class Ultrasonic():
-	def __init__(self, pinNumberGpioTrigger, pinNumberGpioEcho, intervallInSec):
-		self.GPIO_Trigger = pinNumberGpioTrigger
-		self.GPIO_Echo = pinNumberGpioEcho
-		self.IntervallInSec = intervallInSec
-		self.stop = False	
-		
-		#Set GPIO PIN Numbers
-		GPIO_Trigger = self.GPIO_Trigger
-		GPIO_Echo = self.GPIO_Echo
-
-		GPIO.setup(self.GPIO_Trigger, GPIO.OUT)
-		GPIO.setup(self.GPIO_Echo, GPIO.IN)
-	
-	def distanz(self):
-		#setze trigger auf high
-		GPIO.output(self.GPIO_Trigger, True)
-		#den trigger nach 0.01sec auf low
-		time.sleep(0.00001)
-		GPIO.output(self.GPIO_Trigger, False)
-		
-		StartZeit=time.time()
-		StopZeit=time.time()
-		
-		while GPIO.input(self.GPIO_Echo) == 0:
-			StartZeit = time.time()
-			
-		while GPIO.input(self.GPIO_Echo) == 1:
-			StopZeit = time.time()
-			
-		#Zeit differenz zwischen start und ankunft
-		TimeElapse = StopZeit - StartZeit
-		distanz = (TimeElapse * 34300) / 2
-		return distanz
-
-		
-	def startMeasure(self):
-		while True:
-			abstand = self.distanz()
-			print(abstand)
-			time.sleep(self.IntervallInSec)
-
-		
-	def stopMeasure(self):
-		self.stop = True
-		GPIO.cleanup

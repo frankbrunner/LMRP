@@ -21,8 +21,8 @@ class movingCar():
 			
 	def forward(self):
 		print ("get forward")
-		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.LOW)
-		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.HIGH)
+		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.HIGH)
+		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
 		
