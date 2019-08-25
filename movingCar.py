@@ -27,6 +27,8 @@ class movingCar():
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
 		
 	def stop(self):
+     
+   
 		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
