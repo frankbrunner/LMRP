@@ -1,5 +1,6 @@
 
 import serial
+import time
 
 #$GPGGA,212107.00,4722.61267,N,00821.39560,E,1,07,1.34,629.1,M,47.3,M,,*53
 
@@ -11,9 +12,10 @@ port = "/dev/ttyAMA0"  # Raspberry Pi 2
 ser = serial.Serial(port, baudrate = 9600, timeout = 0.5)
 
 def parseGPS(data):
-#    print "raw:", data
-    if data[0:6] == "$GPGGA":
-        s = data.split(",")
+    #print ("raw:", data)
+    if "$GPGGA" in str(data[0:6]):
+		
+        s = str(data).split(",")
         if s[7] == '0':
             print ("no satellite data available")
             return        
@@ -38,5 +40,7 @@ def decode(coord):
 
 while True:
     data = ser.readline()
-    print (data)
     parseGPS(data)
+    
+    
+   
