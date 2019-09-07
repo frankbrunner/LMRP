@@ -5,6 +5,7 @@ GPIO.setmode(GPIO.BCM)
 from Ultrasonic import ultrasonic
 from movingCar import movingCar	
 from distanceMeasure import distanceMeasure
+from GPSData import GPSData
 	
 GPIO.setwarnings(False)
 
@@ -13,6 +14,9 @@ ultrasFront = ultrasonic(20,21)
 ultrasLeft = ultrasonic(19,26)
 ultrasRight = ultrasonic(6,13)
 distMeasure = distanceMeasure(16,6.5,20)
+
+GPS = GPSData()
+
 
 
 mainLoopFrq = 0.1 #0.1 Sec
@@ -62,6 +66,7 @@ while True:
      if subLoopFrq1 >= 1.0:
           print ("sub loop 1")
           subLoopFrq1  = 0
+          print("GPSDATA"+ str(GPS.getLongitude()))
      #sub End
  
 
