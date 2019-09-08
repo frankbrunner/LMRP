@@ -1,11 +1,13 @@
 
 import RPi.GPIO as GPIO
 import time
+import threading
 GPIO.setmode(GPIO.BCM)
 from Ultrasonic import ultrasonic
 from movingCar import movingCar	
 from distanceMeasure import distanceMeasure
 from GPSData import GPSData
+
 	
 GPIO.setwarnings(False)
 
@@ -15,9 +17,7 @@ ultrasLeft = ultrasonic(19,26)
 ultrasRight = ultrasonic(6,13)
 distMeasure = distanceMeasure(16,6.5,20)
 
-GPS = GPSData()
-
-
+gpsData = GPSData()
 
 mainLoopFrq = 0.1 #0.1 Sec
 subLoopFrq05 = 0
@@ -29,49 +29,75 @@ move = movingCar(17,27,23,24)
 boundarys = [[-2.0,1.0],[1.0,1.0],[1.0,-1.0],[-1.0,-1.0]]
 currentPosition = [0.1,0.0]
 
+
+#Variablen deklaration
+longitude = 0.0
+latitude = 0.0
+position = {}
+gpsQuality = 0.0 
+triggerSaveWaypoints = 0
+initialPositionSet = False
+
+
 def scanFrontforBounderys(currentPosition):
     scanArea = [currentPosition[0]+1,currentPosition[1]+1]
     print (boundarys[0:0])
     
-def timer(timer):
-     timer = timer + 0.1
-     return timer
      
-         
-#main Loop
-while True:
-     abstandFront = ultrasFront.distanz()
+def loadGpsData():
+     global longitude 
+     longitude = gpsData.getLongitude()
+     latitude = gpsData.getLatitude()
+     gpsQuality = gpsData.getGPSQual()
      
-     if abstandFront < 30.0:
-         print ("front %.1f cm" % abstandFront)
-               
-     if abstandFront < 20.0:
-         move.stop()
-         
-     dist = distMeasure.distMeasure()
-     print ("dist"+ str(dist) )
-     if dist >= 20.0:
-          move.stop()
-          timer = 99999
+def defineWaypoints():
+     global triggerSaveWaypoints
+     if gpsData.qual >= 1:
+          print("Do you want to start with define Waypoints yes/no:")
+          inputValue = input()
+          if inputValue == "yes":
+               triggerSaveWaypoints = 1
+     else:
+          print("low GPS Quality:" + str(gpsQuality))
           
-     #sub Loop 0.5 sec
-     subLoopFrq05 = timer(subLoopFrq05)
-     if subLoopFrq05 == 0.5:
-          print ("sub loop 0.5")
-          subLoopFrq05 = 0          
-     #sub End
-     
-     #sub Loop 1.0 sec
-     subLoopFrq1 = timer(subLoopFrq1)
-     if subLoopFrq1 >= 1.0:
-          print ("sub loop 1")
-          subLoopFrq1  = 0
-          print("GPSDATA"+ str(GPS.getLongitude()))
-     #sub End
- 
+def saveWaypoints():
+     file = open(waypoint.csv, w)
+     global initialPositionSet
+     if initialPositionSet == False:
+          #set inital position
+          i = 0
+          position[i] = [float(gpsData.lng),float(gpsData.lat)]
+          initialPositionSet = True
+     if initialPositionSet == True:
+          print("Set next gps point type yes:")
+          inputValue = input()
+          x = len(position)
+          position[x] = [gpsData.lng,gpsData.lat]
+          
+          print (position)
 
-     time.sleep(mainLoopFrq)
-#main Loop End
+def GPSdataLoop():
+     while True:
+          gpsData.getGPSData()
+          time.sleep(0.5) 
+          
+def GPSMainLoop():
+     while True:
+          if triggerSaveWaypoints == 1:
+               saveWaypoints()
+          else:
+               defineWaypoints()
+          time.sleep(0.1)           
+          
+    
+process01 = threading.Thread(target=GPSdataLoop)
+process02 = threading.Thread(target=GPSMainLoop)
+process01.start()
+process02.start()
+         
+
+
+
      
 
 
