@@ -44,7 +44,6 @@ def scanFrontforBounderys(currentPosition):
     scanArea = [currentPosition[0]+1,currentPosition[1]+1]
     print (boundarys[0:0])
     
-     
 def loadGpsData():
      global longitude 
      longitude = gpsData.getLongitude()
@@ -53,6 +52,7 @@ def loadGpsData():
           
 def gpsInitalizing():
      clearConsole()
+     
      print("Set robot to first waypoint")
      action = input()
      if action != None:
@@ -68,18 +68,21 @@ def gpsInitalizing():
                action = int(input())
                if action == 1:
                     position[i] = [gpsData.lng,gpsData.lat]
-                    
                if action == 2:
                     saveToCsv(position)
                     break
           getMainMenue()
           
 def saveToCsv(data):
+     listCount = len(data)
+     x=0
      with open('waypoints.csv', 'w', ) as csvFile:
-          writer = csv.writer(csvFile)
-          writer.writerow(data)
-     csvFile.close()
-          
+          while x < listCount:
+               csvFile.write(str(data[x]))
+               # writer = csv.writer(csvFile)
+               # writer.writerow(str(data[0]))
+               x +=1
+
 def clearConsole():
      clear = lambda: os.system("clear")
      clear()
@@ -112,6 +115,22 @@ def getInitialMenue():
           gpsInitalizing()
      if action == 2:
           getMainMenue()    
+
+def checkGpsAccurancy(gpsAccurancy, value, MaxTime):
+     passtTime = 0
+     while Maxtime < passtTime:
+          passtTime += 1
+          if gpsAccurancy < value:
+               clearConsole()
+               loadingBaar = loadingBaar + "*"
+               print("GPS Quality low" + loadingBaar)
+          time.sleep(1)  
+     print("GPS Quality ist still to low press any key to exit")
+     action = input()
+     getMainMenue()
+          
+               
+          
           
 def GPSMainLoop():
      while True:
