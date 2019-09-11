@@ -2,7 +2,6 @@
 import RPi.GPIO as GPIO
 import time
 import threading
-import csv
 import os
 GPIO.setmode(GPIO.BCM)
 from Ultrasonic import ultrasonic
@@ -13,7 +12,6 @@ from GPSData import GPSData
 	
 GPIO.setwarnings(False)
 
-
 ultrasFront = ultrasonic(20,21)
 ultrasLeft = ultrasonic(19,26)
 ultrasRight = ultrasonic(6,13)
@@ -21,16 +19,8 @@ distMeasure = distanceMeasure(16,6.5,20)
 
 gpsData = GPSData()
 
-mainLoopFrq = 0.1 #0.1 Sec
-subLoopFrq05 = 0
-subLoopFrq1 = 0
-
 move = movingCar(17,27,23,24)
 #move.forwardDistance(35.0)
-
-boundarys = [[-2.0,1.0],[1.0,1.0],[1.0,-1.0],[-1.0,-1.0]]
-currentPosition = [0.1,0.0]
-
 
 #Variablen deklaration
 longitude = 0.0
@@ -74,14 +64,19 @@ def gpsInitalizing():
           getMainMenue()
           
 def saveToCsv(data):
-     listCount = len(data)
-     x=0
-     with open('waypoints.csv', 'w', ) as csvFile:
-          while x < listCount:
-               csvFile.write(str(data[x]))
-               # writer = csv.writer(csvFile)
-               # writer.writerow(str(data[0]))
-               x +=1
+     with open('waypoints.csv', 'w') as csvFile:
+          i=0
+          for line in data:
+               csvFile.write(str(data[i])+"\n")
+               i +=1
+
+def loadFromCsv(position):
+     with open('waypoints.csv','r') as csvFile:
+          i = 0
+          for line in csvFile:
+               position[i] = line.strip()
+               i +=1
+          return position
 
 def clearConsole():
      clear = lambda: os.system("clear")
@@ -92,7 +87,8 @@ def getMainMenue():
      clearConsole()
      print("1. Start cuttin Gras" +"\n" 
            "2. Initial field" + "\n" 
-           "3. Exit")
+           "3. Load CSV" + "\n" 
+           "4. Exit")
      action = int(input())
      #auswählen der Hautfunktion
      if action == 1:
@@ -100,6 +96,8 @@ def getMainMenue():
      if action == 2:
           menue = "initial"
      if action == 3:
+          menue = "test"
+     if action == 4:
           exit()
 
 def getCuttingMenue():
@@ -129,9 +127,6 @@ def checkGpsAccurancy(gpsAccurancy, value, MaxTime):
      action = input()
      getMainMenue()
           
-               
-          
-          
 def GPSMainLoop():
      while True:
           print(menue)
@@ -139,6 +134,9 @@ def GPSMainLoop():
                getMainMenue()
           if menue == "initial":
                getInitialMenue()
+          if menue == "loadCSV":
+               loadFromCsv()
+               break
           
           time.sleep(0.1)  
           
