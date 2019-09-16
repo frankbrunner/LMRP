@@ -8,6 +8,7 @@ from Ultrasonic import ultrasonic
 from movingCar import movingCar	
 from distanceMeasure import distanceMeasure
 from GPSData import GPSData
+from GPS_Distance import gpsDistance
 
 	
 GPIO.setwarnings(False)
@@ -18,6 +19,7 @@ ultrasRight = ultrasonic(6,13)
 distMeasure = distanceMeasure(16,6.5,20)
 
 gpsData = GPSData()
+gpsDist = gpsDistance()
 
 move = movingCar(17,27,23,24)
 #move.forwardDistance(35.0)
@@ -29,39 +31,87 @@ position = {}
 gpsQuality = 0.0 
 menue = "main"
 
+def GPSMainLoop():
+     while True:
+          print(menue)
+          if menue == "main":
+               getMainMenue()
+          if menue == "initial":
+               getInitialMenue()
+          if menue == "loadCSV":
+               loadFromCsv()
+               break
+          
+          time.sleep(0.1)  
 
+def GPSdataLoop():
+     while True:
+          gpsData.getGPSData()
+          time.sleep(0.5) 
+          
 def scanFrontforBounderys(currentPosition):
     scanArea = [currentPosition[0]+1,currentPosition[1]+1]
     print (boundarys[0:0])
     
 def loadGpsData():
-     global longitude 
      longitude = gpsData.getLongitude()
      latitude = gpsData.getLatitude()
      gpsQuality = gpsData.getGPSQual()
           
 def gpsInitalizing():
      clearConsole()
-     
-     print("Set robot to first waypoint")
-     action = input()
+     trigger = True
+     print("1.Set robot to first waypoint")
+     action = int(input())
      if action != None:
-          #set inital position
-          i = 0
-          position[i] = [gpsData.lng,gpsData.lat]
+          #set initial GPS Position
+          gpsWayPoints = [47.376762, 8.356943] #[gpsData.lng,gpsData.lat] 
+         
           while True:
                clearConsole()
-               i = len(position)
-               print (position)
-               print("1. Set next Waypoint" + "\n" 
+               print("1. Start initial Waypoints" + "\n" 
                      "2. if completd")
                action = int(input())
                if action == 1:
-                    position[i] = [gpsData.lng,gpsData.lat]
+                    gpsWayPoints= addGpsPointduringMovement(gpsWayPoints, 1.0, trigger)
+                    print(gpsWayPoints)
+                    input()
                if action == 2:
-                    saveToCsv(position)
+                    saveToCsv(gpsWayPoints)
                     break
           getMainMenue()
+  
+def addGpsPointduringMovement(gpsWayPoints,distance,trigger):
+     print ("bla"+str(gpsWayPoints))
+     maxWayPoints = 0
+     while True:
+          #check the curretn Robot positions
+          robotPosition = [47.376846, 8.356880]#[gpsData.lng,gpsData.lat]
+          #check th lenght of the list to set the correct index -0 or 0
+          index = getIndex(gpsWayPoints)
+          passtWayPoint = gpsWayPoints
+          #mesure lenght between passt point and robot    
+          distBetweenWayPoints = gpsDist.getDistance(robotPosition,passtWayPoint)
+          print("Distance:" + str(distBetweenWayPoints))
+          if distBetweenWayPoints > distance:
+               gpsWayPoints[len(gpsWayPoints)] = [gpsData.lng,gpsData.lat]
+          clearConsole()
+          print("Distance:" + str(distBetweenWayPoints))
+          print("Anzahl Puntkte"+ str(len(gpsWayPoints)))
+          if trigger == False:
+               return gpsWayPoints
+               break
+          if maxWayPoints == 500:
+               return gpsWayPoints
+               break
+          maxWayPoints += 1
+          time.sleep(0.5)
+def getIndex(privateList):
+     length = len(privateList)
+     if length > 1:
+          return (-0)
+     else:
+          return 0
           
 def saveToCsv(data):
      with open('waypoints.csv', 'w') as csvFile:
@@ -85,12 +135,12 @@ def clearConsole():
 def getMainMenue():
      global menue 
      clearConsole()
-     print("1. Start cuttin Gras" +"\n" 
+     print("Current GPS Coordinates: " + str(gpsData.lng)+","+str(gpsData.lat)+"\n"
+           "1. Start cuttin Gras" +"\n" 
            "2. Initial field" + "\n" 
            "3. Load CSV" + "\n" 
            "4. Exit")
      action = int(input())
-     #auswählen der Hautfunktion
      if action == 1:
           menue = "cuttin"
      if action == 2:
@@ -127,24 +177,9 @@ def checkGpsAccurancy(gpsAccurancy, value, MaxTime):
      action = input()
      getMainMenue()
           
-def GPSMainLoop():
-     while True:
-          print(menue)
-          if menue == "main":
-               getMainMenue()
-          if menue == "initial":
-               getInitialMenue()
-          if menue == "loadCSV":
-               loadFromCsv()
-               break
+
           
-          time.sleep(0.1)  
-          
-def GPSdataLoop():
-     while True:
-          gpsData.getGPSData()
-          time.sleep(0.5) 
-          
+
     
 process01 = threading.Thread(target=GPSdataLoop)
 process02 = threading.Thread(target=GPSMainLoop)
