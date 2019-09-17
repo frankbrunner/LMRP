@@ -11,8 +11,6 @@ print (type(test))
 class gpsDistance:
 
 	def getDistance(self,pointA,pointB):
-		print (pointA)
-		print (pointB)
 		distance = geodesic(pointA, pointB).miles
 		distance = self.milesToMeters(distance)
 		return (distance)
