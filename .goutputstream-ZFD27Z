@@ -1,0 +1,36 @@
+#GPS Position Script
+
+import os
+import time
+import serial
+import string
+import pynmea2
+
+port = "/dev/ttyAMA0"  # Raspberry Pi 2
+#port = "/dev/ttyS0"    # Raspberry Pi 3
+
+ser = serial.Serial(port, baudrate = 9600, timeout = 0.5)
+
+#loop for the GPS
+while True:
+    dataout = pynmea2.NMEAStreamReader()
+    newdata = ser.readline()
+    newdata = str(newdata)
+    print (newdata[0]) 
+    break
+    newdata = str(newdata)
+
+        
+    print ("GET Latitude and Longitude")
+    #print (newdata[0:6])
+
+    if "$GPGGA" in newdata:
+        print (str(newdata))
+
+        newmsg = pynmea2.parse(newdata)
+        break
+        lat = newmsg.latitude
+        print(lat)
+        lng = newmsg.longitude
+        print(lng)
+        time.sleep(10)

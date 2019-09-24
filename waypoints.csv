@@ -1,0 +1,14 @@
+raw: b''
+raw: b'$GPRMC,,V,,,,,,,,,,N*53\r\n'
+raw: b'$GPVTG,,,,,,,,,N*30\r\n'
+raw: b'$GPGGA,,,,,,0,00,99.99,,,,,,*48\r\n'
+raw: b'$GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30\r\n'
+raw: b'$GPGLL,,,,,,V,N*64\r\n'
+raw: b''
+raw: b'$GPRMC,,V,,,,,,,,,,N*53\r\n'
+raw: b'$GPVTG,,,,,,,,,N*30\r\n'
+raw: b'$GPGGA,,,,,,0,00,99.99,,,,,,*48\r\n'
+raw: b'$GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30\r\n'
+raw: b'$GPGLL,,,,,,V,N*64\r\n'
+
+decimal_coordinate = float("{0:.5f}".format(multiplier * degrees + (minutes / 60) + (seconds / 3600)))
