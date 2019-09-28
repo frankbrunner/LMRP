@@ -34,7 +34,7 @@ class GPSData:
 
     def parseGPGGA(self,data):
         datalocal = {}
-        print ("raw:", data) #prints raw data
+        #print ("raw:", data) #prints raw data
         if data[0:6] == "$GPGGA":
             GPSdata=pynmea2.parse(data)
             if int(GPSdata.gps_qual) < 1 :

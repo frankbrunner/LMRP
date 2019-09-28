@@ -13,7 +13,7 @@ from GPSData01 import GPSData
 from GPS_Distance import gpsDistance
 from geographiclib.geodesic import Geodesic
 from GPS_Calculations import gpsCalculations
-
+from compass import QMC5883L
 	
 GPIO.setwarnings(False)
 
@@ -25,6 +25,9 @@ distMeasure = distanceMeasure(16,6.5,20)
 gpsData = GPSData()
 gpsDist = gpsDistance()
 gpsCalculations = gpsCalculations()
+compass = QMC5883L()
+
+
 
 move = movingCar(17,27,23,24)
 #move.forwardDistance(35.0)
@@ -32,7 +35,8 @@ move = movingCar(17,27,23,24)
 #Global Variablen deklaration
 gpsWayPoints = {}
 menue = "main"
-messageLine = "Message"
+messageLine = ""
+bearing = 0
 
 def GPSMainLoop():
      while True:
@@ -44,20 +48,22 @@ def GPSMainLoop():
                loadFromCsv()
                break
           if menue == "bearing":
-               bearing = getBearing(47.37676,8.356951,47.377545,8.356887)
-               bearing1 = calculate_initial_compass_bearing((8.356951,47.37676),(8.356887,47.377545))
                print(bearing)
-               print(bearing1)
-               input()
-               break
-          time.sleep(0.1)  
+          if menue == "move along boundary":
+               moveAlongBoundary()
+          time.sleep(0.5)  
 
 def GPSdataLoop():
      while True:
           data = gpsData.readLine()
           gpsData.parseGPGGA(data)
      time.sleep(0.1)
-
+     
+def CompassLoop():
+     global bearing
+     while True:
+          bearing = "%.0f" % compass.get_bearing()
+     time.sleep(0.5)
 
 def getMainMenue():
      global menue 
@@ -65,7 +71,8 @@ def getMainMenue():
      print("1. Start cuttin Gras" +"\n" 
            "2. Initial field" + "\n" 
            "3. Get Bearing" + "\n" 
-           "4. Exit")
+           "4. Move along boundary" + "\n" 
+           "5. Exit")
      action = int(input())
      if action == 1:
           menue = "cuttin"
@@ -74,9 +81,12 @@ def getMainMenue():
      if action == 3:
           menue = "bearing"
      if action == 4:
+          menue = "move along boundary"
+     if action == 5:
           exit()     
 
 def getInitialMenue():
+     global menue   
      clearConsole()
      print(messageLine)
      print("1.Set initial Waypoint" +"\n"
@@ -91,20 +101,38 @@ def getInitialMenue():
           setBorderWaypoints(stopTrigger = False)  
      if action == 4:
           loadFromCsv()
-    
-     if action == 5:
-          getMainMenue() 
      if action == 3:
-          saveToCsv(gpsWayPoints)    
+          saveToCsv(gpsWayPoints)   
+     if action == 5:
+          menue = "main"
   
-def getCuttingMenue():
-     clearConsole()
-     print(1)  
-          
-def loadGpsData():
-     longitude = gpsData.getLongitude()
-     latitude = gpsData.getLatitude()
-     gpsQuality = gpsData.getGPSQual()
+def moveAlongBoundary():
+     """checke closest waypoint to robot"""
+     currentRobotPosition = [47.376762, 8.356943]#[gpsData.lat,gpsData.lng]
+     index=getIndexOfClosestWaypoint(currentRobotPosition,gpsWayPoints)
+     print (index)
+     """check direction to closest waypoint"""
+     directionToWaypoint = gpsCalculations.calculateDirection(urrentRobotPosition, gpsWayPoints[index])
+     print (directionToWaypint)
+     
+
+def getIndexOfClosestWaypoint(robotPosition,wayPoints):
+  """localVariables"""
+  distClosest = 0
+  indexWaypoint = 0
+  for x in wayPoints:
+    """check Distance between current Robot and waypoints"""
+    callculatedDist = gpsCalculations.calculateDistance(currentRobotPosition,wayPoints[x])
+    distClosest= checkFirstIteration(distClosest, callculatedDist)
+    if callculatedDist < distClosest:
+      indexWaypoint = x
+  """Return the closest Waypoint"""
+  return indexWaypoint
+
+def checkFirstIteration(distClosest, callculatedDist):
+     if distClosest == 0:
+          distClosest = callculatedDist
+     return distClosest
    
 def setInitialWaypoint():
      global messageLine
@@ -123,18 +151,12 @@ def setBorderWaypoints(stopTrigger):
           distBetweenWaypoints = 0
           currentRobotPosition = [gpsData.lat,gpsData.lng]
           distBetweenWaypoints = gpsCalculations.calculateDistance(currentRobotPosition,gpsWayPoints[-0])
-          if distBetweenWaypoints > 5.0:
+          if distBetweenWaypoints > 2.0:
                gpsWayPoints[len(gpsWayPoints)] = [gpsData.lat,gpsData.lng]
                maxWayPoints += 1
-          if stopTrigger == True:
-               getInitialMenue()
+               messageLine = "Distance:" + "%.3f" % distBetweenWaypoints
                break
-          if maxWayPoints == 10:
-               messageLine = "Reached Max Waypoints"
-               break
-          
-          print( "Distance:" + "%.3f" % distBetweenWaypoints +" :Meter" + "Anzahl Puntkte:"+ str(len(gpsWayPoints)),end="\r")     
-          time.sleep(2)  
+          time.sleep(0.5)  
      getInitialMenue()   
                
 def scanFrontforBounderys(currentPosition):
@@ -162,66 +184,15 @@ def loadFromCsv():
 def clearConsole():
      clear = lambda: os.system("clear")
      clear()
-          
-def checkGpsAccurancy(gpsAccurancy, value, MaxTime):
-     passtTime = 0
-     while Maxtime < passtTime:
-          passtTime += 1
-          if gpsAccurancy < value:
-               clearConsole()
-               loadingBaar = loadingBaar + "*"
-               print("GPS Quality low" + loadingBaar)
-          time.sleep(1)  
-     print("GPS Quality ist still to low press any key to exit")
-     action = input()
-     getMainMenue()
-   
-def getBearing(long1,lat1,long2, lat2):
-    brng = Geodesic.WGS84.Inverse(lat1, long1, lat2, long2)['azi1']
-    return brng   
-def calculate_initial_compass_bearing(pointA, pointB):
-     """
-     Calculates the bearing between two points.
-     The formulae used is the following:
-        θ = atan2(sin(Δlong).cos(lat2),
-                  cos(lat1).sin(lat2) − sin(lat1).cos(lat2).cos(Δlong))
-     :Parameters:
-      - `pointA: The tuple representing the latitude/longitude for the
-        first point. Latitude and longitude must be in decimal degrees
-      - `pointB: The tuple representing the latitude/longitude for the
-        second point. Latitude and longitude must be in decimal degrees
-     :Returns:
-      The bearing in degrees
-     :Returns Type:
-      float
-     """
-     if (type(pointA) != tuple) or (type(pointB) != tuple):
-        raise TypeError("Only tuples are supported as arguments")
 
-     lat1 = math.radians(pointA[0])
-     lat2 = math.radians(pointB[0])
-
-     diffLong = math.radians(pointB[1] - pointA[1])
-
-     x = math.sin(diffLong) * math.cos(lat2)
-     y = math.cos(lat1) * math.sin(lat2) - (math.sin(lat1)
-            * math.cos(lat2) * math.cos(diffLong))
-
-     initial_bearing = math.atan2(x, y)
-
-     # Now we have the initial bearing but math.atan2 return values
-     # from -180° to + 180° which is not what we want for a compass bearing
-     # The solution is to normalize the initial bearing as shown below
-     initial_bearing = math.degrees(initial_bearing)
-     compass_bearing = (initial_bearing + 360) % 360
-
-     return compass_bearing   
           
 
 process01 = threading.Thread(target=GPSdataLoop)
 process02 = threading.Thread(target=GPSMainLoop)
+process03 = threading.Thread(target=CompassLoop)
 process01.start()
 process02.start()
+process03.start()
          
 
 
