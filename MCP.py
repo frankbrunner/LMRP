@@ -26,10 +26,8 @@ gpsData = GPSData()
 gpsDist = gpsDistance()
 gpsCalculations = gpsCalculations()
 compass = QMC5883L()
-
-
-
 move = movingCar(17,27,23,24)
+
 #move.forwardDistance(35.0)
 
 #Global Variablen deklaration
@@ -37,6 +35,7 @@ gpsWayPoints = {}
 menue = "main"
 messageLine = ""
 bearing = 0
+
 
 def GPSMainLoop():
      while True:
@@ -57,6 +56,7 @@ def GPSdataLoop():
      while True:
           data = gpsData.readLine()
           gpsData.parseGPGGA(data)
+          
      time.sleep(0.1)
      
 def CompassLoop():
@@ -108,21 +108,20 @@ def getInitialMenue():
   
 def moveAlongBoundary():
      """checke closest waypoint to robot"""
-     currentRobotPosition = [47.376762, 8.356943]#[gpsData.lat,gpsData.lng]
-     index=getIndexOfClosestWaypoint(currentRobotPosition,gpsWayPoints)
+     robotPosition = [47.376762, 8.356943] #[gpsData.lat,gpsData.lng]
+     index=getIndexOfClosestWaypoint(robotPosition,gpsWayPoints)
      print (index)
      """check direction to closest waypoint"""
-     directionToWaypoint = gpsCalculations.calculateDirection(urrentRobotPosition, gpsWayPoints[index])
-     print (directionToWaypint)
+     directionToWaypoint = gpsCalculations.calculateDirection(robotPosition, gpsWayPoints[index])
+     print (directionToWaypoint)
      
-
 def getIndexOfClosestWaypoint(robotPosition,wayPoints):
   """localVariables"""
   distClosest = 0
   indexWaypoint = 0
   for x in wayPoints:
     """check Distance between current Robot and waypoints"""
-    callculatedDist = gpsCalculations.calculateDistance(currentRobotPosition,wayPoints[x])
+    callculatedDist = gpsCalculations.calculateDistance(robotPosition,wayPoints[x])
     distClosest= checkFirstIteration(distClosest, callculatedDist)
     if callculatedDist < distClosest:
       indexWaypoint = x
@@ -150,11 +149,11 @@ def setBorderWaypoints(stopTrigger):
      while True:
           distBetweenWaypoints = 0
           currentRobotPosition = [gpsData.lat,gpsData.lng]
-          distBetweenWaypoints = gpsCalculations.calculateDistance(currentRobotPosition,gpsWayPoints[-0])
+          distBetweenWaypoints = gpsCalculations.calculateDistance(currentRobotPosition,gpsWayPoints[len(gpsWayPoints)-1])
           if distBetweenWaypoints > 2.0:
                gpsWayPoints[len(gpsWayPoints)] = [gpsData.lat,gpsData.lng]
                maxWayPoints += 1
-               messageLine = "Distance:" + "%.3f" % distBetweenWaypoints
+               messageLine = "Nr. WP :"+ str(len(gpsWayPoints)-1) + "  Distance:" + "%.3f" % distBetweenWaypoints
                break
           time.sleep(0.5)  
      getInitialMenue()   
@@ -177,9 +176,19 @@ def loadFromCsv():
      with open('waypoints.csv','r') as csvFile:
           i = 0
           for line in csvFile:
-               gpsWayPoints[i] = line.strip()
+               gpsWayPoints[i] = line.strip().split(",")
+               gpsWayPoints[i][0] = gpsWayPoints[i][0].strip()
+               gpsWayPoints[i][1] = gpsWayPoints[i][1].strip()
+               gpsWayPoints[i][0] = gpsWayPoints[i][0].strip("[]")
+               gpsWayPoints[i][1] = gpsWayPoints[i][1].strip("[]")
+               
+               gpsWayPoints[i][0] = gpsWayPoints[i][0].strip("'")
+               gpsWayPoints[i][1] = gpsWayPoints[i][1].strip("'")
+               print (gpsWayPoints[i][0])
                i = len(gpsWayPoints)
+
      messageLine = "data loaded"
+     print 
         
 def clearConsole():
      clear = lambda: os.system("clear")
