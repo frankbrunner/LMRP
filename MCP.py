@@ -56,14 +56,16 @@ def GPSdataLoop():
      while True:
           data = gpsData.readLine()
           gpsData.parseGPGGA(data)
-          
+          move.robotPosition = gpsData.lat,gpsData.lng
      time.sleep(0.1)
      
 def CompassLoop():
      global bearing
      while True:
           bearing = "%.0f" % compass.get_bearing()
-     time.sleep(0.5)
+     """update move class atribute"""
+     move.compass = bearing
+     time.sleep(0.2)
 
 def getMainMenue():
      global menue 
@@ -110,10 +112,33 @@ def moveAlongBoundary():
      """checke closest waypoint to robot"""
      robotPosition = [47.376762, 8.356943] #[gpsData.lat,gpsData.lng]
      index=getIndexOfClosestWaypoint(robotPosition,gpsWayPoints)
-     print (index)
      """check direction to closest waypoint"""
      directionToWaypoint = gpsCalculations.calculateDirection(robotPosition, gpsWayPoints[index])
+     directionToWaypoint = correctionDirection(directionToWaypoint)
+     """get turn direction right left  and angle"""
+     turn = getdirectionToTurn(directionToWaypoint,bearing)
      print (directionToWaypoint)
+     print (turn)
+     move.turn(turn[0], directionToWaypoint)
+     #move.forwardToWaypoint(gpsWayPoints[index],directionToWaypoint)
+ 
+
+def correctionDirection(directionToWaypoint):
+     if directionToWaypoint < 1:
+          directionToWaypoint = 360 + directionToWaypoint 
+          directionToWaypoint = "%.0f" % directionToWaypoint
+          return directionToWaypoint
+          
+def getdirectionToTurn(directionToWaypoint,bearing):
+     """first callculation clockwise"""
+     turnAngle = 0
+     if bearing > directionToWaypoint:
+          turn = "left"
+          turnAngle = int(bearing) - int(directionToWaypoint)
+     if bearing < directionToWaypoint:
+          turn = "right"
+          turnAngle = int(directionToWaypoint) -int(bearing)
+     return turn, turnAngle
      
 def getIndexOfClosestWaypoint(robotPosition,wayPoints):
   """localVariables"""

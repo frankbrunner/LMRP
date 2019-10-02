@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 import threading
-
+from GPS_Calculations import gpsCalculations
 GPIO.setmode(GPIO.BCM)
 
 class movingCar():
@@ -13,6 +13,9 @@ class movingCar():
 		self.MOTOR_LEFT_PIN2 = left_pin2
 		self.MOTOR_RIGHT_PIN1 = right_pin1
 		self.MOTOR_RIGHT_PIN2 = right_pin2
+		"""set true the GPS DataLoop"""
+		self.compass = 0
+		self.robotPosition = {}
 		
 		GPIO.setup(self.MOTOR_LEFT_PIN1, GPIO.OUT)
 		GPIO.setup(self.MOTOR_LEFT_PIN2, GPIO.OUT)
@@ -26,11 +29,36 @@ class movingCar():
 		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
 		
+	def forwardToWaypoint(self,waypoint,directionToWaypoint):
+		distToWaypoint = gpsCalculations.calculateDistance(self.robotPosition,waypoint)
+		while distToWaypoint >= 0.5:
+			print (distToWsypoint)
+			GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.HIGH)
+			GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
+			GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
+			GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
+		
 	def stop(self):
 		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.LOW)
+		
+	def turn(self,turnDirection,directionToWaypoint):
+		if turnDirection == "left":	
+			while self.compass <= directionToWaypoint:
+				GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.LOW)
+				GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.HIGH)
+				GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
+				GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
+		if turnDirection == "right":
+			while int(self.compass) >= int(directionToWaypoint):	
+				GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.HIGH)
+				GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
+				GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.HIGH)
+				GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.LOW)
+				print ("turning right")
+
 		
 	def forwardDistance(self, distance):
 		self.forward()
