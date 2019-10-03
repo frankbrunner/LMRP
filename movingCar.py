@@ -22,22 +22,15 @@ class movingCar():
 		GPIO.setup(self.MOTOR_RIGHT_PIN1, GPIO.OUT)
 		GPIO.setup(self.MOTOR_RIGHT_PIN2, GPIO.OUT)
 			
-	def forward(self):
+	def forward(self, time):
 		print ("get forward")
 		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.HIGH)
 		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
-		
-	def forwardToWaypoint(self,waypoint,directionToWaypoint):
-		distToWaypoint = gpsCalculations.calculateDistance(self.robotPosition,waypoint)
-		while distToWaypoint >= 0.5:
-			print (distToWsypoint)
-			GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.HIGH)
-			GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
-			GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
-			GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
-		
+		time.sleep(float(time))
+		self.stop()
+
 	def stop(self):
 		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
@@ -46,7 +39,6 @@ class movingCar():
 		
 	def turn(self,turnDirection,directionToWaypoint):
 		if turnDirection == "left":	
-			while self.compass <= directionToWaypoint:
 				GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.LOW)
 				GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.HIGH)
 				GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)

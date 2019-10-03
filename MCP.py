@@ -35,6 +35,10 @@ gpsWayPoints = {}
 menue = "main"
 messageLine = ""
 bearing = 0
+directionToNextWp=0
+distToNextWp = 0
+nextWp=[0.0,0.0]
+robotPosition =[0.0,0.0]
 
 
 def GPSMainLoop():
@@ -53,10 +57,18 @@ def GPSMainLoop():
           time.sleep(0.5)  
 
 def GPSdataLoop():
+     global robotPosition,distToNextWp  
      while True:
           data = gpsData.readLine()
           gpsData.parseGPGGA(data)
-          move.robotPosition = gpsData.lat,gpsData.lng
+          robotPosition= gpsData.lat,gpsData.lng
+          distToNextWp = gpsCalculations.calculateDistance(robotPosition,nextWp)
+          
+          if float(distToNextWp) > 0.1:
+               move.forward()
+               checkDeviation(directionToNextWp,bearing,5)
+          else:
+               move.stop()
      time.sleep(0.1)
      
 def CompassLoop():
@@ -109,6 +121,7 @@ def getInitialMenue():
           menue = "main"
   
 def moveAlongBoundary():
+     global nextWP,directionToNextWp,menue
      """checke closest waypoint to robot"""
      robotPosition = [47.376762, 8.356943] #[gpsData.lat,gpsData.lng]
      index=getIndexOfClosestWaypoint(robotPosition,gpsWayPoints)
@@ -119,11 +132,29 @@ def moveAlongBoundary():
      turn = getdirectionToTurn(directionToWaypoint,bearing)
      print (directionToWaypoint)
      print (turn)
-     move.turn(turn[0], directionToWaypoint)
-     #move.forwardToWaypoint(gpsWayPoints[index],directionToWaypoint)
- 
+     """turn in direction of first waypoint"""
+     move.turn(turn[0], turn[1])
+     """set global Variable for GPS DATA Loop to start moving"""
+     nextWP = gpsWayPoints[index]
+     directionToNextWp = directionToWaypoint
+     menue = "main"
+     
+def checkDeviation(directionToWaypoint,bearing,deviation):
+     """check if deviation more than 5 degree in case correction"""
+     if directionToWaypoint >= int(bearing) + int(deviation):
+          move.stop()
+          """correction direction right"""
+          move.turn("right", 10)
+          move.forward(1.0)
+          
+     if directionToWaypoint >= int(bearing) - int(deviation):
+          move.stop()
+          """correction direction left"""
+          move.turn("left", 10)
+          move.forward(1.0)
 
 def correctionDirection(directionToWaypoint):
+     """get the degrees in 360"""
      if directionToWaypoint < 1:
           directionToWaypoint = 360 + directionToWaypoint 
           directionToWaypoint = "%.0f" % directionToWaypoint
