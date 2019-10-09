@@ -135,8 +135,8 @@ def moveAlongBoundary():
      """turn in direction of first waypoint"""
      move.turn(turn[0], turn[1])
      """set global Variable for GPS DATA Loop to start moving"""
-     nextWP = gpsWayPoints[index]
-     directionToNextWp = directionToWaypoint
+     #nextWP = gpsWayPoints[index]
+     #directionToNextWp = directionToWaypoint
      menue = "main"
      
 def checkDeviation(directionToWaypoint,bearing,deviation):
