@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import threading
 import os
-from GPS_Calculations import gpsCalculations
+#from GPS_Calculations import gpsCalculations
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
@@ -24,23 +24,21 @@ class movingCar():
 		GPIO.setup(self.MOTOR_RIGHT_PIN1, GPIO.OUT)
 		GPIO.setup(self.MOTOR_RIGHT_PIN2, GPIO.OUT)
 			
-	def forward(self, duration):
-		print ("get forward")
+	def forward(self):
 		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.HIGH)
 		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.HIGH)
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.LOW)
-		time.sleep(duration)
-		self.stop()
+		return
+
 		
-	def backward(self, duration):
-		print ("get backward")
+	def backward(self):
+
 		GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.HIGH)
 		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
-		time.sleep(duration)
-		self.stop()
+	
 	
 
 	def stop(self):
@@ -48,27 +46,22 @@ class movingCar():
 		GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
 		GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.LOW)
+		return True
 		
-	def turn(self,turnDirection,angle):
-		duration = float(angle) * 0.01
+	def turn(self,turnDirection):
 		if turnDirection == "right":	
 				GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.LOW)
 				GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.HIGH)
 				GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.LOW)
 				GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.HIGH)
 				print ("turning right")
-				time.sleep(duration)
-				self.stop()
 		if turnDirection == "left":	
 				GPIO.output(self.MOTOR_RIGHT_PIN1, GPIO.HIGH)
 				GPIO.output(self.MOTOR_RIGHT_PIN2, GPIO.LOW)
 				GPIO.output(self.MOTOR_LEFT_PIN1, GPIO.HIGH)
 				GPIO.output(self.MOTOR_LEFT_PIN2, GPIO.LOW)
 				print ("turning left")
-				time.sleep(duration)
-				self.stop()
 
-		
 	def forwardDistance(self, distance):
 		self.forward()
 		x = threading.Timer(distance/self.DIST_PER_SEC, self.stop)
