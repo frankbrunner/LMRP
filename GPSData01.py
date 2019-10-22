@@ -32,16 +32,26 @@ class GPSData:
             datalocal[1] = sdata[8]                  #True course
             return datalocal
 
-    def parseGPGGA(self,data):
+    def parseGPGGA(self):
         datalocal = {}
-        #print ("raw:", data) #prints raw data
-        if data[0:6] == "$GPGGA":
-            GPSdata=pynmea2.parse(data)
-            if int(GPSdata.gps_qual) < 1 :
-                return "Fix quality below 1"
-            self.lng  =  "%.7f" % GPSdata.longitude
-            self.lat  =  "%.7f" % GPSdata.latitude
-            self.alt  =   GPSdata.altitude
+        gpsSignal = 0
+        while True:
+            data = self.readLine()
+            #print ("raw:", data) 
+            sdata = data.split(",")
+            if sdata[0] =="$GPGGA":
+                GPSdata=pynmea2.parse(data)
+                if int(GPSdata.gps_qual) == 0 :
+                    datalocal[0]= 0
+                    return datalocal
+                else:
+                    datalocal[0] = 1 # GPS Signal alive
+                    datalocal[1] = "%.7f" % GPSdata.latitude
+                    datalocal[2] = "%.7f" % GPSdata.longitude
+                    datalocal[3] = "%.7f" % GPSdata.altitude
+                    return datalocal
+
+ 
 
 
 
