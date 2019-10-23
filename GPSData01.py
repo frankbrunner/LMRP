@@ -34,24 +34,44 @@ class GPSData:
 
     def parseGPGGA(self):
         datalocal = {}
+        dataCol = {}
         gpsSignal = 0
+        x = 0
         while True:
             data = self.readLine()
             #print ("raw:", data) 
             sdata = data.split(",")
             if sdata[0] =="$GPGGA":
+                datalocal = {}
                 GPSdata=pynmea2.parse(data)
-                if int(GPSdata.gps_qual) == 0 :
+                if int(sdata[6]) == 0:
                     datalocal[0]= 0
                     return datalocal
                 else:
-                    datalocal[0] = 1 # GPS Signal alive
-                    datalocal[1] = "%.7f" % GPSdata.latitude
-                    datalocal[2] = "%.7f" % GPSdata.longitude
-                    datalocal[3] = "%.7f" % GPSdata.altitude
-                    return datalocal
 
- 
+                    datalocal[0] = 1 # GPS Signal alive
+                    datalocal[1] = GPSdata.latitude
+                    datalocal[2] = GPSdata.longitude
+                    datalocal[3] = GPSdata.altitude
+                    dataCol[x] = datalocal
+                    x += 1  
+                    if x == 3:
+                        getData = self.dataCorrection(dataCol,x)
+                        x = 0
+                        datalocal.clear()
+                        dataCol.clear()
+                        return getData
+            time.sleep(0.1)
+                    
+    def dataCorrection(self,data,cycle):
+
+        datalocal = {}
+        datalocal[0] = data[0][0]
+        datalocal[1] = "%.7f" % ((float(data[0][1]) + float(data[1][1]) + float(data[2][1])) /cycle)
+        datalocal[2] = "%.7f" % ((float(data[0][2]) + float(data[1][2]) + float(data[2][2])) /cycle)
+        datalocal[3] = data[0][3] 
+        
+        return datalocal
 
 
 
