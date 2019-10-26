@@ -14,6 +14,7 @@ class GPSData:
         self.lng = 0.0
         self.lat = 0.0
         self.alt = 0.0
+        self.gpsstatus = ""
 
     def readLine(self):
         newdata = self.ser.readline()
@@ -31,46 +32,59 @@ class GPSData:
             datalocal[0] = sdata[7]                  #Speed in knots
             datalocal[1] = sdata[8]                  #True course
             return datalocal
+            
+    def gpsStatus(self,data):
+        #print ("raw:", data) 
+        dataFields = data.split(",")
+        if dataFields[0] =="$GPGGA":
+            if int(dataFields[6]) == 0:
+                return "NO GPS DATA"
+            else:
+                return "RECIVING GPS DATA"
+        else:
+            return self.gpsstatus
 
     def parseGPGGA(self):
-        datalocal = {}
-        dataCol = {}
-        gpsSignal = 0
+        timer = time.time()
+        duration = 1.5
+        gpsData = {}
         x = 0
-        while True:
+        while time.time() < timer + duration:
             data = self.readLine()
-            #print ("raw:", data) 
-            sdata = data.split(",")
-            if sdata[0] =="$GPGGA":
-                datalocal = {}
-                GPSdata=pynmea2.parse(data)
-                if int(sdata[6]) == 0:
-                    datalocal[0]= 0
-                    return datalocal
-                else:
-
-                    datalocal[0] = 1 # GPS Signal alive
-                    datalocal[1] = GPSdata.latitude
-                    datalocal[2] = GPSdata.longitude
-                    datalocal[3] = GPSdata.altitude
-                    dataCol[x] = datalocal
-                    x += 1  
-                    if x == 3:
-                        getData = self.dataCorrection(dataCol,x)
-                        x = 0
-                        datalocal.clear()
-                        dataCol.clear()
-                        return getData
+            self.gpsstatus = self.gpsStatus(data)
+            gpsData[x] = self.getData(data,self.gpsstatus)
             time.sleep(0.1)
-                    
-    def dataCorrection(self,data,cycle):
-
+            x +=1
+        gpsData = self.dataCorrection(gpsData)
+        return gpsData
+            
+    def getData(self,data,status):
         datalocal = {}
-        datalocal[0] = data[0][0]
-        datalocal[1] = "%.7f" % ((float(data[0][1]) + float(data[1][1]) + float(data[2][1])) /cycle)
-        datalocal[2] = "%.7f" % ((float(data[0][2]) + float(data[1][2]) + float(data[2][2])) /cycle)
-        datalocal[3] = data[0][3] 
+        if status == "RECIVING GPS DATA":
+            GPSdata=pynmea2.parse(data)
+            datalocal[0] = GPSdata.latitude
+            datalocal[1] = GPSdata.longitude
+            datalocal[2] = 0.0
+            return datalocal
+        else:
+            datalocal[0] = 1.0
+            datalocal[1] = 2.0
+            datalocal[2] = 0.0
+            return datalocal
+          
+                    
+    def dataCorrection(self,data):
+        datalocal = {}
+        x=0
+        sumLat = 0.0
+        sumLon = 0.0
         
+        print(data)
+        for item in data:
+            sumLat = sumLat + data[item][0]
+            sumLon = sumLon + data[item][1]
+        datalocal[0] = sumLat / len(data)
+        datalocal[1] = sumLon / len(data)
         return datalocal
 
 
