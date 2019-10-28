@@ -13,70 +13,78 @@ class GPSData:
         self.ser = serial.Serial(self.port, baudrate=9600,timeout=0.5)
         self.lng = 0.0
         self.lat = 0.0
-        self.qual = 0
-        self.sat =0 
+        self.alt = 0.0
+        self.gpsstatus = ""
+        self.sat = 0
+
+    def readLine(self):
+        newdata = self.ser.readline()
+        GPSdataString= str(newdata)
+        GPSdataString= GPSdataString[2:-5]   #alle zeilenumbruch Zeichen am Anfang und ende werden entfernt
+        return GPSdataString
         
-    def getGPSData(self):
-        while True: 
-            newdata = self.ser.readline()
-            GPSdataString= str(newdata)
-            GPSdataString= GPSdataString[2:-5]   #alle zeilenumbruch Zeichen am Anfang und ende werden entfernt
-            if GPSdataString[0:6] == "$GPGGA":
-                GPSdata=pynmea2.parse(GPSdataString)
-                self.lng = GPSdata.longitude
-                self.lat = GPSdata.latitude
-                self.qual = GPSdata.gps_qual
-                self.sat = GPSdata.num_sats
-                break
+    def parseGPRMC(self,data):
+        datalocal = {}
+        #print ("raw:", data) #prints raw data
+        if data[0:6] == "$GPRMC":
+            sdata = data.split(",")
+            if sdata[2] == 'V':
+                return "no satellite data available"
+            datalocal[0] = sdata[7]                  #Speed in knots
+            datalocal[1] = sdata[8]                  #True course
+            return datalocal
+                
+    def gpsStatus(self,data):
+        #print ("raw:", data) 
+        dataFields = data.split(",")
+        if dataFields[0] =="$GPGGA":
+            if int(dataFields[6]) == 0:
+                return "NO GPS DATA"
+            else:
+                return "RECIVING GPS DATA"
+        else:
+            return self.gpsstatus
+
+    def parseGPGGA(self):
+        gpsData = {}
+        gpsData = self.getData(2)
+        gpsData = self.dataCorrection(gpsData)
+        return
+            
+    def getData(self,duration):
+        datalocal = {}
+        dataCol = {}
+        timer = time.time()
+        x =0
+        while time.time() < timer + duration:
+            data = self.readLine()
+            dataFields = data.split(",")
+            if dataFields[0] =="$GPGGA":
+                if int(dataFields[6]) == 1:
+                    GPSdata=pynmea2.parse(data)
+                    datalocal[0] = GPSdata.latitude
+                    datalocal[1] = GPSdata.longitude
+                    self.alt = GPSdata.altitude
+                    self.sat = GPSdata.num_sats
+                    dataCol[x] = datalocal
+                    x +=1
             time.sleep(0.1)
+        return dataCol
             
-    
-    def getLongitude(self):
-        gpsString = self.validateData()
-        if gpsString != None:
-            lng = gpsString.longitude
-            return lng
-        else:
-            return None
-            
-    def getLatitude(self):
-        gpsString = self.validateData()
-        if gpsString != None:
-            lat = gpsString.latitude
-            return lat
+    def dataCorrection(self,data):
+        coordinates = {}
+        sumLat = 0.0
+        sumLng = 0.0
+        print (len(data))
+        if len(data) < 1:
+            self.lat = 0.0
+            self.lng  = 0.0
+            return coordinates 
+        for item in data:
+            sumLat = sumLat + data[item][0]
+            sumLng = sumLng + data[item][1]
 
-        
-    def getGPSQual(self):
-        gpsString = self.validateData()
-        if gpsString != None:
-            gps_qual = gpsString.gps_qual
-            return int(gps_qual)
-        else:
-            return 0
-            
-        
-    def getGPSSat(self):
-        gpsString = self.validateData()
-        if gpsString != None:
-            num_sats = gpsString.num_sats
-            return gps_qual
+        self.lat = "%.6f" % (sumLat / len(data))
+        self.lng = "%.6f" % (sumLng / len(data))
+        return 
 
-    def validateData(self):
-        GPSdataString = self.getGPSData()
-        if GPSdataString[0:6] == "$GPGGA":
-            returnObj = pynmea2.parse(GPSdataString)
-            return returnObj
-
-            
-
-# x = GPSData()   
-# def clearConsole():
-     # clear = lambda: os.system("clear")
-     # clear()    
-# while True:
-    # x.getGPSData()
-    # clearConsole()
-    # print ("GPS Quality:"+ str(x.qual))
-    # print ("GPS Sat:"+ str(x.sat))
-    # print (x.lat, x.lng)
-    # time.sleep(0.5)
