@@ -1,0 +1,35 @@
+{% extends "layouts/main.html" %}
+
+{% block content %}
+   <h1>{{name}}</h1>
+      <div>
+         <input class="button-primary" id="forward" type = "button" value="forward"  />
+      <div>
+          <input class="button-primary" id="left" type = "button" value="left"  />
+      </div>
+      <div>
+         <input class="button-primary" id="right" type = "button" value="right"  />
+      </div>
+      <div >
+         <input class="button-primary" id="backward" type = "button" value="backward"  />
+      </div> 
+      
+
+
+
+      <div class="four columns value-prop"></div>
+   
+   <script>
+      $("#forward").mouseup(function() {$.get("http://192.168.1.66:5000/move?function=stop")})
+      .mousedown(function() {$.get("http://192.168.1.66:5000/move?function=forward")});
+      
+      $("#backward").mouseup(function() {$.get("http://192.168.1.66:5000/move?function=stop")})
+      .mousedown(function() {$.get("http://192.168.1.66:5000/move?function=backward")});
+      
+      $("#left").mouseup(function() {$.get("http://192.168.1.66:5000/move?function=stop")})
+      .mousedown(function() {$.get("http://192.168.1.66:5000/move?function=left")});
+         
+      $("#right").mouseup(function() {$.get("http://192.168.1.66:5000/move?function=stop")})
+      .mousedown(function() {$.get("http://192.168.1.66:5000/move?function=right")});
+  </script>
+{% endblock %}

@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+	<title>unbenannt</title>
+   <link rel="stylesheet" href="/static/lib/skeleton/normalize.css" />
+   <link rel="stylesheet" href="/static/lib/skeleton/skeleton.css" />
+   <link rel="stylesheet" href="/static/style.css" />
+   <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+</head>
+
+<body>
+   <div class="container">
+      <ul class="navigation">
+	 <li class="navigation-item">
+	    <a href="/">Startseite</a> 
+	 </li>
+	 <li class="navigation-item">
+	    <a href="/test">Testseite</a> 
+	 </li>
+      </ul>
+   <div style="clear: both;" >&nbsp;</div>
+   {% block content%}{% endblock %}	
+   </div>
+   
+ 
+   
+</body>
+
+</html>
