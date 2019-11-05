@@ -7,6 +7,7 @@ from consoleOutput import consoleOutput
 import threading
 import RPi.GPIO as GPIO
 import time
+from captureWP import capture
 
 
 GPIO.setmode(GPIO.BCM)
@@ -17,6 +18,7 @@ compass = QMC5883L()
 gpsData = GPSData()
 csv = csv()
 output = consoleOutput()
+capture = capture()
 
 """Global Variables"""
 gpsWP= {}
@@ -30,7 +32,7 @@ def startProcedure():
 	data = csv.loadFromCsv("./waypoints.csv")
 	startServices(getCompassData)
 	startServices(getGPSdata)
-	#webserver()	
+	webserver()	
 
 def startServices(serviceName):
 	service = threading.Thread(target=serviceName)
@@ -45,7 +47,7 @@ def getGPSdata():
 		"""get relevant GPS Data 0 = Signal 1 = lat 2= long"""
 		gpsData.parseGPGGA()
 		output.outputGpsStatus(str("test"))
-		robotPosition = gpsData.lat,gpsData.lng
+		robotPosition = [gpsData.lat,gpsData.lng]
 		output.outputGPS(gpsData.lat,gpsData.lng,gpsData.sat)
 
 def getCompassData():
@@ -54,7 +56,6 @@ def getCompassData():
 		bearing = "%.0f" % compass.get_bearing()
 		output.outputBearing(bearing)
 		time.sleep(0.2)
-
 	
 
 def webserver():
@@ -66,9 +67,13 @@ def webserver():
 	def index():
 		return(render_template("start.html", name="this ist Frank"))
 
-	@mcp.route('/initiate')
+	@mcp.route('/init')
 	def initiate():
-		return(render_template("test.html", name="this ist Frank"))
+		if request.args.get("function") == "sethomebase":
+			returnValue= capture.setHomeBase(robotPosition)
+			return(render_template("init.html", status=returnValue))
+		else:
+			return(render_template("init.html", titel="Init Page"))
 			
 	@mcp.route('/move')
 	def move():

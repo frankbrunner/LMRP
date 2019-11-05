@@ -1,0 +1,20 @@
+{% extends "layouts/main.html" %}
+
+{% block content %}
+   <h1>{{name}}</h1>
+      <div>
+       <p>{{ titel }}</p>
+      </div>
+      <div>
+       <p>{{ status }}</p>
+      </div>
+      <div>
+         <input class="button-primary" id="sethomebase" type = "button" value="set Home Base" />
+      <div>
+         
+      <script>
+      $("#sethomebase").mousedown(function() {$.get("http://192.168.1.66:5000/init?function=sethomebase")});
+      
+  </script>
+
+{% endblock %}

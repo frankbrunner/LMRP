@@ -1,15 +1,22 @@
 
 
-class captureWP():
+class capture():
 	def __init__(self):
-		print(test)
+		from mysqlConnect import mySql
+		self.mysql = mySql("robot","Pass4you","robot")
 		
-	def setHomeBase(self):
-		gpsWayPoints[0] = [gpsData.lat,gpsData.lng] 
-		messageLine = "initial Waypoint is set"+str(gpsWayPoints[0]) 
+	def setHomeBase(self,robotPosition):
+		# ~ attributes =  [["latitude","47.22133"],["longitude", "8.222311"],["homePos", False]]
+		homeBaseAllreadySet = self.mysql.selectRecord("waypoints", "homebase")
+		if homeBaseAllreadySet:
+			return True
+		else:
+			attributes = [["latitude",robotPosition[0]],["longitude", robotPosition[1]],["homeBase", True]]
+			self.mysql.createRecord("waypoints",attributes)
+
 	
 	def setStartMoving(self):
-		gpsWayPoints[0] = [gpsData.lat,gpsData.lng] 
+		#gpsWayPoints[0] = [gpsData.lat,gpsData.lng] 
 		messageLine = "initial Waypoint is set"+str(gpsWayPoints[0]) 
 
 	# ~ def capture(self):  

@@ -40,14 +40,20 @@ class mySql():
 		self.dbcursor.execute(sql, values)
 		self.db.commit()
 	
-def selectRecord():
-	dbcursor = mydb.cursor()
-	sql = "select latitude,longitude from waypoints"
-	dbcursor.execute(sql)
-	myresult = dbcursor.fetchall()
-	print (myresult)
-	
-# ~ sql = mySql("robot","Pass4you","robot")
-# ~ attributes =  [["latitude","47.22133"],["longitude", "8.222311"],["homePos", False]]
-# ~ sql.createRecord("waypoints", attributes)
+	def selectRecord(self,table,attribute):
+		sql = "select * from "+table+" where "+attribute
+		print (sql)
+		self.dbcursor.execute(sql)
+		myresult = self.dbcursor.fetchall()
+		print (myresult)
+		if myresult:
+			return True
+		else:
+			return False
+			
+sql = mySql("robot","Pass4you","robot")
+attributes =  [["latitude","47.22133"],["longitude", "8.222311"],["homebase", True]]
+sql.createRecord("waypoints", attributes)
+value = sql.selectRecord("waypoints", "homebase=true")
+print (value)
 
