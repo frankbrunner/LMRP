@@ -7,12 +7,13 @@ class capture():
 		
 	def setHomeBase(self,robotPosition):
 		# ~ attributes =  [["latitude","47.22133"],["longitude", "8.222311"],["homePos", False]]
-		homeBaseAllreadySet = self.mysql.selectRecord("waypoints", "homebase")
+		homeBaseAllreadySet = self.mysql.checkIfRecordExists("waypoints", "homebase")
 		if homeBaseAllreadySet:
-			return True
+			return "Home Base allready set"
 		else:
 			attributes = [["latitude",robotPosition[0]],["longitude", robotPosition[1]],["homeBase", True]]
 			self.mysql.createRecord("waypoints",attributes)
+			return "Home Base has been set"
 
 	
 	def setStartMoving(self):

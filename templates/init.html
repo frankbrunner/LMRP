@@ -3,7 +3,7 @@
 {% block content %}
    <h1>{{name}}</h1>
       <div>
-       <p>{{ titel }}</p>
+       <p id="title">{{ titel }}</p>
       </div>
       <div>
        <p>{{ status }}</p>
@@ -13,8 +13,63 @@
       <div>
          
       <script>
-      $("#sethomebase").mousedown(function() {$.get("http://192.168.1.66:5000/init?function=sethomebase")});
-      
-  </script>
+         setInterval(function() { 
+         // alle 3 Sekunden ausführen 
+         $.ajax({
+               type:"get",
+               url: "http://192.168.1.66:5000/init",
+               data: {function: "getdirection" 
+                     },
+               success: function(response)
+                  {
+                     console.log(response);
+                     $("#title").text(response);
+                  }
+                  }
+                  )  
+         }, 3000); 
+         
+         
+         
+         
+         
+         
+        $("#sethomebase").click(function() 
+            {
+            $.ajax({
+               type:"get",
+               url: "http://192.168.1.66:5000/init",
+               data: {function: "sethomebase" 
+                     },
+               success: function(response)
+                  {
+                     console.log(response);
+                     $("#title").text(response);
+                     ///$("#sethomebase").val(response);
+                  }
+                  }
+                  )  
+            }
+         );
+         
+         setInterval(function() { 
+         // alle 3 Sekunden ausführen 
+         $.ajax({
+               type:"get",
+               url: "http://192.168.1.66:5000/init",
+               data: {function: "getdirection" 
+                     },
+               success: function(response)
+                  {
+                     console.log(response);
+                     $("#title").text(response);
+                  }
+                  }
+                  )  
+         }, 1000); 
+
+
+
+      </script>
 
 {% endblock %}

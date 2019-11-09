@@ -31,7 +31,7 @@ def startProcedure():
 	global gpsWP
 	data = csv.loadFromCsv("./waypoints.csv")
 	startServices(getCompassData)
-	startServices(getGPSdata)
+	# ~ startServices(getGPSdata)
 	webserver()	
 
 def startServices(serviceName):
@@ -57,23 +57,28 @@ def getCompassData():
 		output.outputBearing(bearing)
 		time.sleep(0.2)
 	
+"""Webservice"""
 
-def webserver():
+def webserver():	
+
+	mcp = Flask(__name__) 
 	
-	"""Webservice"""
-	mcp = Flask(__name__)
-
 	@mcp.route('/')	
 	def index():
 		return(render_template("start.html", name="this ist Frank"))
-
+	
 	@mcp.route('/init')
 	def initiate():
+		value ="tst"
 		if request.args.get("function") == "sethomebase":
 			returnValue= capture.setHomeBase(robotPosition)
-			return(render_template("init.html", status=returnValue))
-		else:
-			return(render_template("init.html", titel="Init Page"))
+			return(returnValue)
+		if request.args.get("function") == "getdirection":
+			return(str(bearing))
+			
+		return(render_template("init.html", titel=value))
+		
+	
 			
 	@mcp.route('/move')
 	def move():
@@ -89,9 +94,9 @@ def webserver():
 			moveRobot.stop()
 		"""render Template"""
 		return(render_template("move.html", name="this ist Frank"))
-
+	
 	if __name__=='__main__':
 		print("has been starting")
 		mcp.run(debug=True, host = '0.0.0.0')
-	
+
 startProcedure()
