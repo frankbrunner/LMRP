@@ -39,7 +39,16 @@ class mySql():
 		print (sql)
 		self.dbcursor.execute(sql, values)
 		self.db.commit()
-	
+		return "Record has been created"
+		
+	def deleteRecord(self,table,attribute):	
+		sql = "delete from "+table+" where "+attribute
+		self.dbcursor.execute(sql)
+		self.db.commit()
+		return "Waypoints has been deleted"
+		
+		
+		
 	def checkIfRecordExists(self,table,attribute):
 		sql = "select * from "+table+" where "+attribute
 		self.dbcursor.execute(sql)
@@ -50,8 +59,13 @@ class mySql():
 			return False
 			
 # ~ sql = mySql("robot","Pass4you","robot")
-# ~ attributes =  [["latitude","47.22133"],["longitude", "8.222311"],["homebase", True]]
-# ~ sql.createRecord("waypoints", attributes)
+# ~ attributes =  [["latitude","47.22133"],["longitude", "8.222311"],["homebase", False]]
+# ~ value = sql.createRecord("waypoints", attributes)
 # ~ value = sql.selectRecord("waypoints", "homebase=true")
+
+# ~ attributes = "wp_number"
+# ~ value = sql.deleteRecord("waypoints", attributes)
+
+
 # ~ print (value)
 

@@ -11,34 +11,19 @@
       <div>
          <input class="button-primary" id="sethomebase" type = "button" value="set Home Base" />
       <div>
+               <div>
+         <input class="button-primary" id="setfirstwp" type = "button" value="set first WP" />
+      <div>
          
       <script>
-         setInterval(function() { 
-         // alle 3 Sekunden ausführen 
-         $.ajax({
-               type:"get",
-               url: "http://192.168.1.66:5000/init",
-               data: {function: "getdirection" 
-                     },
-               success: function(response)
-                  {
-                     console.log(response);
-                     $("#title").text(response);
-                  }
-                  }
-                  )  
-         }, 3000); 
-         
-         
-         
-         
-         
+
+      
          
         $("#sethomebase").click(function() 
             {
             $.ajax({
                type:"get",
-               url: "http://192.168.1.66:5000/init",
+               url: "http://192.168.1.66:5000/api",
                data: {function: "sethomebase" 
                      },
                success: function(response)
@@ -52,11 +37,28 @@
             }
          );
          
+         $("#setfirstwp").click(function() 
+            {
+            $.ajax({
+               type:"get",
+               url: "http://192.168.1.66:5000/api",
+               data: {function: "setfirstwp" 
+                     },
+               success: function(response)
+                  {
+                     console.log(response);
+                     $("#title").text(response);
+                  }
+                  }
+                  )  
+            }
+         );
+         
          setInterval(function() { 
          // alle 3 Sekunden ausführen 
          $.ajax({
                type:"get",
-               url: "http://192.168.1.66:5000/init",
+               url: "http://192.168.1.66:5000/api",
                data: {function: "getdirection" 
                      },
                success: function(response)
@@ -66,7 +68,7 @@
                   }
                   }
                   )  
-         }, 1000); 
+         }, 20000); 
 
 
 

@@ -1,9 +1,10 @@
-from flask import Flask, render_template,request
+
 from movingCar import movingCar	
 from compass import QMC5883L
 from GPSData import GPSData
 from csv import csv
 from consoleOutput import consoleOutput
+from webservice import webserver
 import threading
 import RPi.GPIO as GPIO
 import time
@@ -29,10 +30,10 @@ outputLines={}
 
 def startProcedure():
 	global gpsWP
-	data = csv.loadFromCsv("./waypoints.csv")
 	startServices(getCompassData)
-	# ~ startServices(getGPSdata)
-	webserver()	
+	startServices(getGPSdata)
+	# ~ output.enable = True
+	webserver()
 
 def startServices(serviceName):
 	service = threading.Thread(target=serviceName)
@@ -56,30 +57,30 @@ def getCompassData():
 		bearing = "%.0f" % compass.get_bearing()
 		output.outputBearing(bearing)
 		time.sleep(0.2)
-	
-"""Webservice"""
 
-def webserver():	
-
+def webserver():
+	from flask import Flask, render_template,request	
 	mcp = Flask(__name__) 
+	
+	@mcp.route('/api')
+	def api():
+		if request.args.get("function") == "getdirection":
+			return(str(bearing))
+		if request.args.get("function") == "sethomebase":
+			returnValue= capture.setHomeBase(robotPosition)
+			return(returnValue)
+		if request.args.get("function") == "setfirstwp":
+			returnValue= capture.firstWP(robotPosition)
+			return(returnValue)
 	
 	@mcp.route('/')	
 	def index():
 		return(render_template("start.html", name="this ist Frank"))
 	
 	@mcp.route('/init')
-	def initiate():
-		value ="tst"
-		if request.args.get("function") == "sethomebase":
-			returnValue= capture.setHomeBase(robotPosition)
-			return(returnValue)
-		if request.args.get("function") == "getdirection":
-			return(str(bearing))
-			
-		return(render_template("init.html", titel=value))
-		
-	
-			
+	def initiate():			
+		return(render_template("init.html", titel="Init Page"))
+				
 	@mcp.route('/move')
 	def move():
 		if request.args.get("function") == "forward":
